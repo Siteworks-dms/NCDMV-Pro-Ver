@@ -80,8 +80,10 @@ export default function NCFormsPanel({ dealId, dealerId, forms, damageFlag, warr
       if (error) throw error
       toast.success(`${FORM_LABELS[type]} generated`)
       onRefresh()
-    } catch {
-      toast.error('Failed to generate form')
+    } catch (err: any) {
+      const msg = err?.message ?? String(err)
+      toast.error(`Form error: ${msg}`)
+      console.error('Generate error:', err)
     } finally {
       setGenerating(null)
     }
