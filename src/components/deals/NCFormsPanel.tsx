@@ -137,6 +137,7 @@ export default function NCFormsPanel({ dealId, dealerId, deal, forms, damageFlag
   const progressPct = Math.round((completedCount / requiredForms.length) * 100)
 
   return (
+    <>
     <div className="space-y-4">
       {/* Progress */}
       <div className="flex items-center justify-between mb-2">
@@ -288,13 +289,14 @@ export default function NCFormsPanel({ dealId, dealerId, deal, forms, damageFlag
       </div>
     </div>
 
-    {viewingForm && deal && (
-      <PDFViewerModal
-        open={!!viewingForm}
-        onClose={() => setViewingForm(null)}
-        formType={viewingForm}
-        deal={deal}
-      />
-    )}
+      {viewingForm && deal && (
+        <PDFViewerModal
+          open={!!viewingForm}
+          onClose={() => setViewingForm(null)}
+          formType={viewingForm}
+          deal={deal}
+        />
+      )}
+    </>
   )
 }

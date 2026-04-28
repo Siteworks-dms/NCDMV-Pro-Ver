@@ -122,6 +122,7 @@ export default function NCForms() {
   const DEALER_ID = import.meta.env.VITE_DEALER_ID ?? ''
 
   return (
+    <>
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -275,13 +276,14 @@ export default function NCForms() {
       )}
     </div>
 
-    {viewerDeal && viewerFormType && (
-      <PDFViewerModal
-        open={!!viewerDeal}
-        onClose={() => { setViewerDeal(null); setViewerFormType(null) }}
-        formType={viewerFormType}
-        deal={viewerDeal}
-      />
-    )}
+      {viewerDeal && viewerFormType && (
+        <PDFViewerModal
+          open={!!viewerDeal}
+          onClose={() => { setViewerDeal(null); setViewerFormType(null) }}
+          formType={viewerFormType}
+          deal={viewerDeal}
+        />
+      )}
+    </>
   )
 }
