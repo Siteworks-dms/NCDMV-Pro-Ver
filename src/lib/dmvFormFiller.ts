@@ -147,7 +147,7 @@ async function fillMVR180(deal: DealSummary): Promise<FillResult> {
   }
 
   const pdfBytes = await doc.save()
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+  const blob = new Blob([pdfBytes.buffer.slice(0)], { type: 'application/pdf' })
   return { blob, url: URL.createObjectURL(blob), formId: 'MVR-180', fieldsFilled: filled, fieldsNotFound: notFound, usedFallback }
 }
 
@@ -199,7 +199,7 @@ async function fillMVR181(deal: DealSummary): Promise<FillResult> {
   }
 
   const pdfBytes = await doc.save()
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+  const blob = new Blob([pdfBytes.buffer.slice(0)], { type: 'application/pdf' })
   return { blob, url: URL.createObjectURL(blob), formId: 'MVR-181', fieldsFilled: filled, fieldsNotFound: notFound, usedFallback }
 }
 
@@ -261,7 +261,7 @@ async function fillMVR1(deal: DealSummary): Promise<FillResult> {
   }
 
   const pdfBytes = await doc.save()
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+  const blob = new Blob([pdfBytes.buffer.slice(0)], { type: 'application/pdf' })
   return { blob, url: URL.createObjectURL(blob), formId: 'MVR-1', fieldsFilled: filled, fieldsNotFound: notFound, usedFallback }
 }
 
@@ -317,7 +317,7 @@ async function fillMVR2(deal: DealSummary): Promise<FillResult> {
   }
 
   const pdfBytes = await doc.save()
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+  const blob = new Blob([pdfBytes.buffer.slice(0)], { type: 'application/pdf' })
   return { blob, url: URL.createObjectURL(blob), formId: 'MVR-2', fieldsFilled: filled, fieldsNotFound: notFound, usedFallback }
 }
 
