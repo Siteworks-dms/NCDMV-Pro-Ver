@@ -25,6 +25,7 @@
     "lucide-react": "^0.383.0",
     "sonner": "^1.4.41",
     "@react-pdf/renderer": "^3.4.0",
+    "pdf-lib": "^1.17.1",
     "numeral": "^2.0.6"
   },
   "devDependencies": {
