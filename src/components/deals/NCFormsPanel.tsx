@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { FileText, CheckCircle, Clock, XCircle, AlertTriangle, Download, RefreshCw } from 'lucide-react'
+import { FileText, CheckCircle, Clock, XCircle, AlertTriangle, Eye, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { NCForm, NCFormType, NCFormStatus } from '@/types/database'
 import { FORM_LABELS, NOTARY_REQUIRED } from '@/types/database'
+import type { DealSummary } from '@/types/database'
+import PDFViewerModal from '@/components/pdf/PDFViewerModal'
 
 const FORM_DESCRIPTIONS: Record<NCFormType, string> = {
   mvr1:             'Title Application — notarization required. File with NCDMV within 28 days.',
@@ -27,15 +29,17 @@ const STATUS_CONFIG: Record<NCFormStatus, { icon: React.ElementType; color: stri
 interface NCFormsPanelProps {
   dealId: string
   dealerId: string
+  deal: DealSummary | null
   forms: NCForm[]
   damageFlag: boolean
   warrantyType: 'as_is' | 'full_warranty' | 'limited_warranty'
   onRefresh: () => void
 }
 
-export default function NCFormsPanel({ dealId, dealerId, forms, damageFlag, warrantyType, onRefresh }: NCFormsPanelProps) {
+export default function NCFormsPanel({ dealId, dealerId, deal, forms, damageFlag, warrantyType, onRefresh }: NCFormsPanelProps) {
   const [generating, setGenerating] = useState<NCFormType | null>(null)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [viewingForm, setViewingForm] = useState<NCFormType | null>(null)
 
   const requiredForms: NCFormType[] = [
     'bill_of_sale',
@@ -242,8 +246,11 @@ export default function NCFormsPanel({ dealId, dealerId, forms, damageFlag, warr
                       </button>
                     ))}
                     {status !== 'draft' && (
-                      <button className="btn-ghost py-1 px-3 text-xs gap-1.5 text-gray-500">
-                        <Download size={12} /> Download PDF
+                      <button
+                        onClick={() => setViewingForm(type)}
+                        className="btn-ghost py-1 px-3 text-xs gap-1.5 text-blue-600 hover:bg-blue-50"
+                      >
+                        <Eye size={12} /> View PDF
                       </button>
                     )}
                     {status === 'generated' && (
@@ -280,5 +287,14 @@ export default function NCFormsPanel({ dealId, dealerId, forms, damageFlag, warr
         </p>
       </div>
     </div>
+
+    {viewingForm && deal && (
+      <PDFViewerModal
+        open={!!viewingForm}
+        onClose={() => setViewingForm(null)}
+        formType={viewingForm}
+        deal={deal}
+      />
+    )}
   )
 }

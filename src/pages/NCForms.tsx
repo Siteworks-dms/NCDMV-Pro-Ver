@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, FileText, CheckCircle, AlertTriangle, Clock, Download, ExternalLink } from 'lucide-react'
+import { RefreshCw, FileText, CheckCircle, AlertTriangle, Clock, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { downloadPDF, type PDFFormType } from '@/lib/pdfForms'
@@ -7,6 +7,7 @@ import type { DealSummary, NCForm, NCFormType, NCFormStatus } from '@/types/data
 import { FORM_LABELS, NOTARY_REQUIRED } from '@/types/database'
 import { StatCard } from '@/components/ui'
 import { titleDaysRemaining, formatCurrency } from '@/lib/supabase'
+import PDFViewerModal from '@/components/pdf/PDFViewerModal'
 
 const FORM_ORDER: NCFormType[] = ['bill_of_sale', 'mvr180', 'ftc_buyers_guide', 'mvr1', 'mvr2', 'mvr181']
 
@@ -27,6 +28,8 @@ export default function NCForms() {
   const [deals, setDeals]         = useState<DealWithForms[]>([])
   const [loading, setLoading]     = useState(true)
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [viewerDeal, setViewerDeal] = useState<DealSummary | null>(null)
+  const [viewerFormType, setViewerFormType] = useState<NCFormType | null>(null)
   const [filterStatus, setFilterStatus] = useState<'all' | 'incomplete' | 'complete'>('incomplete')
 
   const fetchData = useCallback(async () => {
@@ -243,21 +246,21 @@ export default function NCForms() {
                         {isPDFable && (
                           <button
                             onClick={() => status === 'draft'
-                              ? handleGenerateAndDownload(deal, formType, DEALER_ID)
-                              : handleDownload(deal, formType)
+                              ? handleGenerateAndDownload(deal, formType, DEALER_ID).then(() => { setViewerDeal(deal); setViewerFormType(formType) })
+                              : (() => { setViewerDeal(deal); setViewerFormType(formType) })()
                             }
                             disabled={isDownloading}
                             className={`w-full flex items-center justify-center gap-1.5 text-xs py-1.5 rounded-lg border transition-all ${
                               status === 'draft'
                                 ? 'bg-white border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-600'
-                                : 'bg-white border-green-200 text-green-700 hover:bg-green-50'
+                                : 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50'
                             }`}
                           >
                             {isDownloading
                               ? <><RefreshCw size={11} className="animate-spin" /> Generating...</>
                               : status === 'draft'
-                              ? <><FileText size={11} /> Generate & Download</>
-                              : <><Download size={11} /> Download PDF</>
+                              ? <><FileText size={11} /> Generate & View</>
+                              : <><Eye size={11} /> View PDF</>
                             }
                           </button>
                         )}
@@ -271,5 +274,14 @@ export default function NCForms() {
         </div>
       )}
     </div>
+
+    {viewerDeal && viewerFormType && (
+      <PDFViewerModal
+        open={!!viewerDeal}
+        onClose={() => { setViewerDeal(null); setViewerFormType(null) }}
+        formType={viewerFormType}
+        deal={viewerDeal}
+      />
+    )}
   )
 }

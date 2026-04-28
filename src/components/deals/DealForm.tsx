@@ -529,6 +529,45 @@ export default function DealForm({ open, onClose, onSaved, editDealId }: DealFor
             <NCFormsPanel
               dealId={dealId}
               dealerId={DEALER_ID}
+              deal={dealId ? {
+                id: dealId,
+                deal_number: '',
+                dealer_id: DEALER_ID,
+                sale_date: saleDate,
+                status: 'pending' as const,
+                payment_type: paymentType as any,
+                warranty_type: warrantyType,
+                sale_price: parseFloat(salePrice) || 0,
+                hut_amount: hut.amount,
+                hut_capped: hut.capped,
+                doc_fee: parseFloat(docFee) || 0,
+                trade_allowance: tradeAllowance,
+                cash_down: parseFloat(cashDown) || 0,
+                amount_financed: amountFinanced,
+                total_amount_due: totalAmountDue,
+                title_filing_due: '',
+                title_filed_at: null,
+                temp_tag_expiry: '',
+                vin: selectedVehicle?.vin ?? '',
+                year: selectedVehicle?.year ?? 0,
+                make: selectedVehicle?.make ?? '',
+                model: selectedVehicle?.model ?? '',
+                trim: selectedVehicle?.trim ?? null,
+                color_exterior: selectedVehicle?.color_exterior ?? null,
+                odometer: selectedVehicle?.odometer_acquisition ?? 0,
+                damage_flag: selectedVehicle?.damage_flag ?? false,
+                flood_salvage_flag: selectedVehicle?.flood_salvage_flag ?? false,
+                buyer_name: selectedBuyer ? `${selectedBuyer.first_name} ${selectedBuyer.last_name}` : '',
+                buyer_email: selectedBuyer?.email ?? null,
+                buyer_phone: selectedBuyer?.phone_primary ?? null,
+                address_line1: selectedBuyer?.address_line1 ?? null,
+                city: selectedBuyer?.city ?? null,
+                state: selectedBuyer?.state ?? null,
+                zip: selectedBuyer?.zip ?? null,
+                forms: null,
+                title_days_remaining: 28,
+                temp_tag_valid: true,
+              } : null}
               forms={forms}
               damageFlag={selectedVehicle?.damage_flag ?? false}
               warrantyType={warrantyType}
