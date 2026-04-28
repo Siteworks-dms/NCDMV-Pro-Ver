@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { PDFViewer } from '@react-pdf/renderer'
 import { X, Printer, Loader2 } from 'lucide-react'
 import {
@@ -6,9 +6,8 @@ import {
   FTCBuyersGuidePDF, MVR1PDF, MVR2PDF,
   type PDFFormType,
 } from '@/lib/pdfForms'
-import type { DealSummary } from '@/types/database'
+import type { DealSummary, NCFormType } from '@/types/database'
 import { FORM_LABELS } from '@/types/database'
-import type { NCFormType } from '@/types/database'
 
 interface PDFViewerModalProps {
   open: boolean
@@ -19,24 +18,26 @@ interface PDFViewerModalProps {
 
 export default function PDFViewerModal({ open, onClose, formType, deal }: PDFViewerModalProps) {
   const [ready, setReady] = useState(false)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   if (!open) return null
 
   const handlePrint = () => {
-    // Find the iframe rendered by PDFViewer and trigger its print
+    // Trigger print on the PDFViewer iframe
     const iframes = document.querySelectorAll('iframe')
+    let printed = false
     iframes.forEach(iframe => {
-      try {
-        iframe.contentWindow?.print()
-      } catch {
-        // fallback — open blob and print
+      if (!printed) {
+        try {
+          iframe.contentWindow?.print()
+          printed = true
+        } catch { /* ignore cross-origin */ }
       }
     })
   }
 
-  const PDFComponent = () => {
-    switch (formType as PDFFormType) {
+  const renderDoc = () => {
+    const type = formType as PDFFormType
+    switch (type) {
       case 'bill_of_sale':     return <BillOfSalePDF deal={deal} />
       case 'mvr180':           return <MVR180PDF deal={deal} />
       case 'mvr181':           return <MVR181PDF deal={deal} />
@@ -64,8 +65,7 @@ export default function PDFViewerModal({ open, onClose, formType, deal }: PDFVie
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              disabled={!ready}
-              className="flex items-center gap-1.5 bg-brand-400 hover:bg-brand-600 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 bg-brand-400 hover:bg-brand-600 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               <Printer size={14} />
               Print Form
@@ -81,25 +81,29 @@ export default function PDFViewerModal({ open, onClose, formType, deal }: PDFVie
 
         {/* PDF Viewer */}
         <div className="flex-1 relative bg-gray-100 rounded-b-2xl overflow-hidden">
-          {/* Loading overlay */}
           {!ready && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10 pointer-events-none">
               <Loader2 size={24} className="animate-spin text-brand-400 mb-3" />
               <p className="text-sm text-gray-500">Rendering PDF...</p>
-              <p className="text-xs text-gray-400 mt-1">{FORM_LABELS[formType]}</p>
             </div>
           )}
 
           <PDFViewer
-            ref={iframeRef}
             width="100%"
             height="100%"
-            style={{ border: 'none', borderRadius: '0 0 1rem 1rem' }}
             showToolbar={false}
-            onLoad={() => setReady(true)}
+            style={{ border: 'none', display: 'block' }}
           >
-            <PDFComponent />
+            {renderDoc()}
           </PDFViewer>
+
+          {/* Ready trigger — PDFViewer doesn't expose onLoad so we use a timeout */}
+          {!ready && (
+            <div
+              style={{ display: 'none' }}
+              ref={() => { setTimeout(() => setReady(true), 1500) }}
+            />
+          )}
         </div>
 
       </div>
