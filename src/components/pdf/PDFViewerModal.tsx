@@ -92,7 +92,6 @@ export default function PDFViewerModal({ open, onClose, formType, deal }: PDFVie
             width="100%"
             height="100%"
             showToolbar={false}
-            style={{ border: 'none', display: 'block' }}
           >
             {renderDoc()}
           </PDFViewer>
