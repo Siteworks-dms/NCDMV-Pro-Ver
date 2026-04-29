@@ -85,6 +85,36 @@ export async function discoverFields(formId: DMVFormId): Promise<string[]> {
   return form.getFields().map(f => `${f.constructor.name}: ${f.getName()}`)
 }
 
+
+/** 
+ * DEBUG: Draw a coordinate grid overlay on a PDF page.
+ * Call this in the browser console to find exact field positions:
+ *   import { debugGrid } from '@/lib/dmvFormFiller'
+ *   debugGrid('MVR-180').then(url => window.open(url))
+ */
+export async function debugGrid(formId: DMVFormId): Promise<string> {
+  const res = await fetch(`/forms/${formId}.pdf`)
+  const bytes = await res.arrayBuffer()
+  const doc = await PDFDocument.load(bytes, { ignoreEncryption: true })
+  const font = await doc.embedFont(StandardFonts.Helvetica)
+  const page = doc.getPage(0)
+  const { width, height } = page.getSize()
+
+  // Draw grid lines every 50 pts
+  for (let y = 50; y < height; y += 50) {
+    page.drawLine({ start: { x: 0, y }, end: { x: width, y }, thickness: 0.3, color: rgb(0.8, 0.8, 1) })
+    page.drawText(String(Math.round(height - y)), { x: 2, y: y + 1, size: 6, font, color: rgb(0, 0, 0.8) })
+  }
+  for (let x = 50; x < width; x += 50) {
+    page.drawLine({ start: { x, y: 0 }, end: { x, y: height }, thickness: 0.3, color: rgb(1, 0.8, 0.8) })
+    page.drawText(String(x), { x: x + 1, y: height - 10, size: 6, font, color: rgb(0.8, 0, 0) })
+  }
+
+  const saved = await doc.save()
+  const blob = new Blob([new Uint8Array(saved).buffer as ArrayBuffer], { type: 'application/pdf' })
+  return URL.createObjectURL(blob)
+}
+
 // ── MVR-180: Odometer Disclosure ─────────────────────────────────────────────
 async function fillMVR180(deal: DealSummary): Promise<FillResult> {
   const res = await fetch('/forms/MVR-180.pdf')
@@ -133,17 +163,23 @@ async function fillMVR180(deal: DealSummary): Promise<FillResult> {
     const { height } = page.getSize()
     const H = height
 
-    // Coordinates tuned for NC DMV MVR-180 form (Letter size, 72 pts/inch)
-    // These are approximate — use discoverFields() to fine-tune
-    await drawText(page, font, deal.vin,                   200, H - 192, 10)
-    await drawText(page, font, String(deal.year),           72, H - 220,  9)
-    await drawText(page, font, deal.make,                  130, H - 220,  9)
-    await drawText(page, font, deal.model,                 280, H - 220,  9)
-    await drawText(page, font, String(deal.odometer?.toLocaleString()), 72, H - 295, 11)
-    await drawText(page, font, deal.buyer_name,             72, H - 380,  9)
-    await drawText(page, font, deal.address_line1 ?? '',    72, H - 395,  9)
-    await drawText(page, font, `${deal.city ?? ''}, ${deal.state ?? 'NC'} ${deal.zip ?? ''}`, 72, H - 410, 9)
-    await drawText(page, font, fmtDate(deal.sale_date),    400, H - 410,  9)
+    // MVR-180 coordinates — Letter 612x792 pts, origin bottom-left
+    // VEHICLE SECTION table row
+    await drawText(page, font, String(deal.year),           38, H - 222,  9) // YEAR column
+    await drawText(page, font, deal.make,                   95, H - 222,  9) // MAKE column
+    await drawText(page, font, deal.model ?? '',           168, H - 222,  9) // BODY STYLE/MODEL column
+    await drawText(page, font, deal.vin,                   305, H - 222, 10) // VIN column (far right)
+    // DISCLOSURE SECTION — "odometer now reads ___ miles"
+    await drawText(page, font, String(deal.odometer?.toLocaleString() ?? ''), 218, H - 299, 10)
+    // SELLER SECTION (dealer fills name/signature — leave those blank, add date only)
+    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 418,  9) // Date of certification
+    // BUYER SECTION
+    await drawText(page, font, deal.buyer_name,             72, H - 488,  9) // Buyer printed name
+    await drawText(page, font, deal.address_line1 ?? '',    72, H - 508,  9) // Buyer address
+    await drawText(page, font, deal.city ?? '',             72, H - 528,  9) // City
+    await drawText(page, font, deal.state ?? 'NC',         310, H - 528,  9) // State
+    await drawText(page, font, deal.zip ?? '',             430, H - 528,  9) // Zip
+    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 548,  9) // Buyer date
   }
 
   const pdfBytes = await doc.save()
@@ -189,13 +225,19 @@ async function fillMVR181(deal: DealSummary): Promise<FillResult> {
     const { height } = page.getSize()
     const H = height
 
-    await drawText(page, font, deal.vin,           200, H - 192, 10)
-    await drawText(page, font, String(deal.year),   72, H - 220,  9)
-    await drawText(page, font, deal.make,          130, H - 220,  9)
-    await drawText(page, font, deal.model,         280, H - 220,  9)
-    await drawText(page, font, deal.color_exterior ?? '', 380, H - 220, 9)
-    await drawText(page, font, deal.buyer_name,     72, H - 350,  9)
-    await drawText(page, font, fmtDate(deal.sale_date), 400, H - 350, 9)
+    // MVR-181 — Vehicle section
+    await drawText(page, font, String(deal.year),           38, H - 185,  9)
+    await drawText(page, font, deal.make,                   95, H - 185,  9)
+    await drawText(page, font, deal.model ?? '',           200, H - 185,  9)
+    await drawText(page, font, deal.vin,                   350, H - 185, 10)
+    await drawText(page, font, deal.color_exterior ?? '',  500, H - 185,  9)
+    // Seller/Buyer section
+    await drawText(page, font, deal.buyer_name,             72, H - 490,  9)
+    await drawText(page, font, deal.address_line1 ?? '',    72, H - 510,  9)
+    await drawText(page, font, deal.city ?? '',             72, H - 530,  9)
+    await drawText(page, font, deal.state ?? 'NC',         310, H - 530,  9)
+    await drawText(page, font, deal.zip ?? '',             430, H - 530,  9)
+    await drawText(page, font, fmtDate(deal.sale_date),    400, H - 490,  9)
   }
 
   const pdfBytes = await doc.save()
@@ -247,17 +289,25 @@ async function fillMVR1(deal: DealSummary): Promise<FillResult> {
     const { height } = page.getSize()
     const H = height
 
-    await drawText(page, font, deal.vin,                   200, H - 180, 10)
-    await drawText(page, font, String(deal.year),           72, H - 208,  9)
-    await drawText(page, font, deal.make,                  130, H - 208,  9)
-    await drawText(page, font, deal.model,                 280, H - 208,  9)
-    await drawText(page, font, String(deal.odometer?.toLocaleString()), 380, H - 208, 9)
-    await drawText(page, font, fmt(deal.sale_price),        72, H - 236,  9)
-    await drawText(page, font, fmt(deal.hut_amount),       220, H - 236,  9)
-    await drawText(page, font, deal.buyer_name,             72, H - 290,  9)
-    await drawText(page, font, deal.address_line1 ?? '',    72, H - 305,  9)
-    await drawText(page, font, `${deal.city ?? ''}, ${deal.state ?? 'NC'} ${deal.zip ?? ''}`, 72, H - 320, 9)
-    await drawText(page, font, fmtDate(deal.sale_date),    400, H - 320,  9)
+    // MVR-1 — Vehicle ID section (top of form)
+    await drawText(page, font, deal.vin,                   290, H - 140, 10) // VIN field top area
+    await drawText(page, font, String(deal.year),           38, H - 168,  9) // Year
+    await drawText(page, font, deal.make,                  100, H - 168,  9) // Make
+    await drawText(page, font, deal.model ?? '',           200, H - 168,  9) // Model
+    await drawText(page, font, deal.color_exterior ?? '',  360, H - 168,  9) // Color
+    await drawText(page, font, String(deal.odometer?.toLocaleString() ?? ''), 460, H - 168, 9)
+    // Purchase price & HUT
+    await drawText(page, font, fmt(deal.sale_price),        38, H - 210,  9)
+    await drawText(page, font, fmt(deal.hut_amount),       180, H - 210,  9)
+    await drawText(page, font, fmtDate(deal.sale_date),    350, H - 210,  9)
+    // Buyer section
+    await drawText(page, font, deal.buyer_name,             38, H - 310,  9)
+    await drawText(page, font, deal.address_line1 ?? '',    38, H - 330,  9)
+    await drawText(page, font, deal.city ?? '',             38, H - 350,  9)
+    await drawText(page, font, deal.state ?? 'NC',         260, H - 350,  9)
+    await drawText(page, font, deal.zip ?? '',             360, H - 350,  9)
+    // Filing deadline reminder
+    await drawText(page, font, `Title due: ${fmtDate(deal.title_filing_due)}`, 38, H - 375, 8)
   }
 
   const pdfBytes = await doc.save()
@@ -306,14 +356,20 @@ async function fillMVR2(deal: DealSummary): Promise<FillResult> {
     const { height } = page.getSize()
     const H = height
 
-    await drawText(page, font, deal.vin,           200, H - 180, 10)
-    await drawText(page, font, String(deal.year),   72, H - 208,  9)
-    await drawText(page, font, deal.make,          130, H - 208,  9)
-    await drawText(page, font, deal.buyer_name,     72, H - 260,  9)
-    await drawText(page, font, deal.address_line1 ?? '', 72, H - 275, 9)
-    await drawText(page, font, `${deal.city ?? ''}, ${deal.state ?? 'NC'} ${deal.zip ?? ''}`, 72, H - 290, 9)
-    await drawText(page, font, fmt(deal.sale_price),  350, H - 260, 9)
-    await drawText(page, font, fmtDate(deal.sale_date), 400, H - 290, 9)
+    // MVR-2 — Vehicle section
+    await drawText(page, font, deal.vin,                   290, H - 148, 10)
+    await drawText(page, font, String(deal.year),           38, H - 175,  9)
+    await drawText(page, font, deal.make,                  100, H - 175,  9)
+    await drawText(page, font, deal.model ?? '',           200, H - 175,  9)
+    await drawText(page, font, String(deal.odometer?.toLocaleString() ?? ''), 380, H - 175, 9)
+    // Buyer / Purchaser section
+    await drawText(page, font, deal.buyer_name,             38, H - 248,  9)
+    await drawText(page, font, deal.address_line1 ?? '',    38, H - 268,  9)
+    await drawText(page, font, deal.city ?? '',             38, H - 288,  9)
+    await drawText(page, font, deal.state ?? 'NC',         260, H - 288,  9)
+    await drawText(page, font, deal.zip ?? '',             360, H - 288,  9)
+    await drawText(page, font, fmt(deal.sale_price),       420, H - 248,  9)
+    await drawText(page, font, fmtDate(deal.sale_date),    420, H - 288,  9)
   }
 
   const pdfBytes = await doc.save()

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, Plus, AlertTriangle, Clock, CheckCircle, XCircle, FileText } from 'lucide-react'
+import { RefreshCw, Plus, AlertTriangle, Clock, CheckCircle, XCircle, FileText, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, formatCurrency, titleDaysRemaining } from '@/lib/supabase'
 import type { DealSummary, NCFormType, DealStatus } from '@/types/database'
@@ -69,6 +69,14 @@ function DealCard({ deal }: { deal: DealSummary }) {
     funded:    'bg-green-50 text-green-700 border border-green-200',
     cancelled: 'bg-red-50 text-red-700 border border-red-200',
     unwound:   'bg-red-50 text-red-700 border border-red-200',
+  }
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete deal ${deal.deal_number}? This cannot be undone.`)) return
+    const { error } = await import('@/lib/supabase').then(m => m.supabase.from('deals').delete().eq('id', deal.id))
+    if (error) { import('sonner').then(m => m.toast.error(error.message)); return }
+    import('sonner').then(m => m.toast.success('Deal deleted'))
+    window.location.reload()
   }
 
   return (
@@ -162,6 +170,13 @@ function DealCard({ deal }: { deal: DealSummary }) {
         <button className="btn-primary flex-1 text-xs py-1.5">
           Open Deal →
         </button>
+        {(deal.status === 'pending' || deal.status === 'pencil') && (
+          <button onClick={e => { e.stopPropagation(); handleDelete() }}
+            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors border border-gray-200"
+            title="Delete deal">
+            <Trash2 size={13} />
+          </button>
+        )}
       </div>
     </div>
   )
