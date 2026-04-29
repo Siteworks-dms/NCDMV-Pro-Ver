@@ -231,7 +231,10 @@ function DeleteConfirm({ open, onClose, onConfirm, name }: {
   return (
     <Modal open={open} onClose={onClose} title="Delete Customer" width="max-w-sm">
       <p className="text-sm text-gray-700 mb-1">Delete <strong>{name}</strong>?</p>
-      <p className="text-xs text-gray-500 mb-6">This will permanently remove the customer record and uploaded ID. Cannot be undone.</p>
+      <p className="text-xs text-gray-500 mb-2">This will permanently remove the customer record and uploaded ID. Cannot be undone.</p>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700 mb-5">
+        ⚠ If this customer has linked deals, deletion will be blocked. Cancel or reassign those deals first.
+      </div>
       <div className="flex gap-3">
         <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button onClick={() => { onConfirm(); onClose() }} className="btn-danger flex-1">Delete</button>
@@ -260,6 +263,17 @@ export default function Customers() {
   useEffect(() => { fetchCustomers() }, [fetchCustomers])
 
   const handleDelete = async (c: Customer) => {
+    // Check if customer has any linked deals first
+    const { count } = await supabase
+      .from('deals')
+      .select('id', { count: 'exact', head: true })
+      .eq('buyer_id', c.id)
+
+    if ((count ?? 0) > 0) {
+      toast.error(`Cannot delete — ${c.first_name} ${c.last_name} has ${count} deal(s) on record. Cancel or reassign the deals first.`)
+      return
+    }
+
     // Delete ID document from storage if exists
     if ((c as any).id_document_path) {
       await supabase.storage.from('customer-docs').remove([(c as any).id_document_path])
