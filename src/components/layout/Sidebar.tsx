@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Car, FileText, Users, TrendingUp,
-  ClipboardList, Settings, ChevronRight
+  ClipboardList, Settings as SettingsIcon, ChevronRight
 } from 'lucide-react'
 import type { AppPage } from '@/App'
 
@@ -16,6 +16,7 @@ const NAV_ITEMS: { id: AppPage; label: string; icon: React.ElementType; badge?: 
   { id: 'customers', label: 'Customers',    icon: Users },
   { id: 'leads',     label: 'CRM Leads',   icon: TrendingUp },
   { id: 'ncforms',   label: 'NC DMV Forms', icon: ClipboardList, badge: 'NC' },
+  { id: 'settings',  label: 'Settings',     icon: SettingsIcon },
 ]
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
@@ -61,8 +62,8 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         <div className="text-xs text-gray-400 font-mono mb-1">DEALER</div>
         <div className="text-sm font-medium text-gray-800 truncate">Triangle Motors</div>
         <div className="text-xs text-gray-400 font-mono">NC #12345</div>
-        <button className="mt-3 w-full nav-item text-xs">
-          <Settings size={13} />
+        <button onClick={() => onNavigate('settings')} className={`mt-3 w-full nav-item text-xs ${currentPage === 'settings' ? 'active' : ''}`}>
+          <SettingsIcon size={13} />
           Settings
         </button>
       </div>

@@ -9,6 +9,7 @@ import Deals from '@/pages/Deals'
 import Customers from '@/pages/Customers'
 import Leads from '@/pages/Leads'
 import NCForms from '@/pages/NCForms'
+import Settings from '@/pages/Settings'
 
 // Layout
 import Sidebar from '@/components/layout/Sidebar'
@@ -23,7 +24,7 @@ const queryClient = new QueryClient({
   },
 })
 
-export type AppPage = 'dashboard' | 'inventory' | 'deals' | 'customers' | 'leads' | 'ncforms'
+export type AppPage = 'dashboard' | 'inventory' | 'deals' | 'customers' | 'leads' | 'ncforms' | 'settings'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>('dashboard')
@@ -36,6 +37,7 @@ export default function App() {
       case 'customers':  return <Customers />
       case 'leads':      return <Leads />
       case 'ncforms':    return <NCForms />
+      case 'settings':   return <Settings />
       default:           return <Dashboard />
     }
   }

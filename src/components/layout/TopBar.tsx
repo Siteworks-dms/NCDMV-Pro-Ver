@@ -8,6 +8,7 @@ const PAGE_TITLES: Record<AppPage, { title: string; subtitle: string }> = {
   customers:  { title: 'Customers',     subtitle: 'Buyer & seller records' },
   leads:      { title: 'CRM Leads',     subtitle: 'Pipeline & follow-ups' },
   ncforms:    { title: 'NC DMV Forms',  subtitle: 'MVR-1, MVR-180, MVR-181, MVR-2, FTC' },
+  settings:   { title: 'Business Profile', subtitle: 'Dealership info · Fee defaults · NC compliance' },
 }
 
 interface TopBarProps {
