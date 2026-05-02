@@ -163,23 +163,23 @@ async function fillMVR180(deal: DealSummary): Promise<FillResult> {
     const { height } = page.getSize()
     const H = height
 
-    // MVR-180 coordinates — Letter 612x792 pts, origin bottom-left
-    // VEHICLE SECTION table row
-    await drawText(page, font, String(deal.year),           38, H - 222,  9) // YEAR column
-    await drawText(page, font, deal.make,                   95, H - 222,  9) // MAKE column
-    await drawText(page, font, deal.model ?? '',           168, H - 222,  9) // BODY STYLE/MODEL column
-    await drawText(page, font, deal.vin,                   305, H - 222, 10) // VIN column (far right)
-    // DISCLOSURE SECTION — "odometer now reads ___ miles"
-    await drawText(page, font, String(deal.odometer?.toLocaleString() ?? ''), 218, H - 299, 10)
-    // SELLER SECTION (dealer fills name/signature — leave those blank, add date only)
-    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 418,  9) // Date of certification
+    // MVR-180 — calibrated from screenshot
+    // VEHICLE SECTION — data row is at ~y=210 from top of page
+    await drawText(page, font, String(deal.year),           38, H - 210,  9) // YEAR
+    await drawText(page, font, deal.make,                   98, H - 210,  9) // MAKE
+    await drawText(page, font, deal.model ?? '',           178, H - 210,  9) // BODY STYLE
+    await drawText(page, font, deal.vin,                   368, H - 210, 8.5) // VIN — far right column
+    // DISCLOSURE — odometer blank line after "(miles, no tenths)"
+    await drawText(page, font, String(deal.odometer?.toLocaleString() ?? ''), 222, H - 288, 9)
+    // SELLER SECTION — Date of certification field
+    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 455,  9)
     // BUYER SECTION
-    await drawText(page, font, deal.buyer_name,             72, H - 488,  9) // Buyer printed name
-    await drawText(page, font, deal.address_line1 ?? '',    72, H - 508,  9) // Buyer address
-    await drawText(page, font, deal.city ?? '',             72, H - 528,  9) // City
-    await drawText(page, font, deal.state ?? 'NC',         310, H - 528,  9) // State
-    await drawText(page, font, deal.zip ?? '',             430, H - 528,  9) // Zip
-    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 548,  9) // Buyer date
+    await drawText(page, font, deal.buyer_name,            240, H - 415,  9) // Buyer printed name (right column)
+    await drawText(page, font, deal.address_line1 ?? '',    72, H - 495,  9) // Buyer address
+    await drawText(page, font, deal.city ?? '',             72, H - 515,  9) // City
+    await drawText(page, font, deal.state ?? 'NC',         310, H - 515,  9) // State
+    await drawText(page, font, deal.zip ?? '',             430, H - 515,  9) // Zip
+    await drawText(page, font, fmtDate(deal.sale_date),     72, H - 555,  9) // Buyer date
   }
 
   const pdfBytes = await doc.save()
