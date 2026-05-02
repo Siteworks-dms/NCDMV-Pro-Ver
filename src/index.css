@@ -273,10 +273,10 @@
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
     gap: 6px; border-radius: 999px; font-weight: 700;
-    font-size: 13px; cursor: pointer; transition: all 0.18s;
+    font-size: 11.5px; cursor: pointer; transition: all 0.18s;
     border: none; font-family: 'Nunito', sans-serif;
-    padding: 10px 26px; letter-spacing: 0.2px;
-    white-space: nowrap; min-height: 40px;
+    padding: 8px 20px; letter-spacing: 0.3px;
+    white-space: nowrap; min-height: 34px;
     line-height: 1;
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
