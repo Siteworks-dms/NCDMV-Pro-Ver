@@ -22,9 +22,9 @@
     --danger:   #e05c5c;
     --success:  #4caf87;
     --amber:    #e09b3d;
-    --radius:   14px;
-    --radius-lg:20px;
-    --radius-xl:28px;
+    --radius:   20px;
+    --radius-lg:26px;
+    --radius-xl:34px;
     /* Neumorphic shadow pairs */
     --nm-out: 5px 5px 12px var(--sh-dark), -5px -5px 12px var(--sh-light);
     --nm-out-sm: 3px 3px 8px var(--sh-dark), -3px -3px 8px var(--sh-light);
