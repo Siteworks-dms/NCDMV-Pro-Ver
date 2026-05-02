@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Car, FileText, Users, TrendingUp,
-  ClipboardList, Settings as SettingsIcon, ChevronRight
+  ClipboardList, Settings as SettingsIcon, ChevronRight, Shield
 } from 'lucide-react'
 import type { AppPage } from '@/App'
 
@@ -16,27 +16,23 @@ const NAV_ITEMS: { id: AppPage; label: string; icon: React.ElementType; badge?: 
   { id: 'customers', label: 'Customers',    icon: Users },
   { id: 'leads',     label: 'CRM Leads',   icon: TrendingUp },
   { id: 'ncforms',   label: 'NC DMV Forms', icon: ClipboardList, badge: 'NC' },
-  { id: 'settings',  label: 'Settings',     icon: SettingsIcon },
 ]
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   return (
-    <aside className="w-56 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+    <aside className="sidebar">
       {/* Logo */}
-      <div className="px-4 py-5 border-b border-gray-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-400 flex items-center justify-center">
-            <span className="text-white text-xs font-bold font-mono">DMS</span>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900 leading-none">NC DMS Pro</p>
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">v1.0.0</p>
-          </div>
+      <div className="sidebar-logo">
+        <div className="logo-mark">
+          <Shield size={16} color="#fff" strokeWidth={2.5} />
         </div>
+        <h1>NC DMS Pro</h1>
+        <p>Dealer Management System</p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="sidebar-nav">
+        <div className="sidebar-section-label">Main Menu</div>
         {NAV_ITEMS.map(item => {
           const Icon = item.icon
           const isActive = currentPage === item.id
@@ -44,28 +40,38 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`nav-item w-full text-left ${isActive ? 'active' : ''}`}
+              className={`nav-link ${isActive ? 'active' : ''}`}
             >
-              <Icon size={16} className="flex-shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <Icon size={16} className="nav-icon" />
+              {item.label}
               {item.badge && (
-                <span className="badge-nc-red text-[9px] px-1.5 py-0">{item.badge}</span>
+                <span className="nav-badge">{item.badge}</span>
               )}
-              {isActive && <ChevronRight size={14} className="opacity-40" />}
+              {isActive && !item.badge && (
+                <ChevronRight size={13} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+              )}
             </button>
           )
         })}
       </nav>
 
-      {/* Dealer info */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <div className="text-xs text-gray-400 font-mono mb-1">DEALER</div>
-        <div className="text-sm font-medium text-gray-800 truncate">Triangle Motors</div>
-        <div className="text-xs text-gray-400 font-mono">NC #12345</div>
-        <button onClick={() => onNavigate('settings')} className={`mt-3 w-full nav-item text-xs ${currentPage === 'settings' ? 'active' : ''}`}>
-          <SettingsIcon size={13} />
+      {/* Bottom */}
+      <div className="sidebar-bottom">
+        <button
+          onClick={() => onNavigate('settings')}
+          className={`nav-link w-full mb-2 ${currentPage === 'settings' ? 'active' : ''}`}
+          style={{ width: '100%' }}
+        >
+          <SettingsIcon size={16} className="nav-icon" />
           Settings
+          {currentPage === 'settings' && (
+            <ChevronRight size={13} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+          )}
         </button>
+        <div className="dealer-chip">
+          <div className="name">Triangle Motors LLC</div>
+          <div className="license">NC Dealer #12345</div>
+        </div>
       </div>
     </aside>
   )

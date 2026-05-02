@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Toaster } from 'sonner'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-// Pages (stubs — will be built out in subsequent files)
 import Dashboard from '@/pages/Dashboard'
 import Inventory from '@/pages/Inventory'
 import Deals from '@/pages/Deals'
@@ -11,17 +10,11 @@ import Leads from '@/pages/Leads'
 import NCForms from '@/pages/NCForms'
 import Settings from '@/pages/Settings'
 
-// Layout
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,    // 5 minutes
-      retry: 1,
-    },
-  },
+  defaultOptions: { queries: { staleTime: 1000 * 60 * 5, retry: 1 } },
 })
 
 export type AppPage = 'dashboard' | 'inventory' | 'deals' | 'customers' | 'leads' | 'ncforms' | 'settings'
@@ -44,16 +37,26 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <div className="app-shell">
         <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="main-area">
           <TopBar currentPage={currentPage} />
-          <main className="flex-1 overflow-auto p-6">
+          <main className="page-content">
             {renderPage()}
           </main>
         </div>
       </div>
-      <Toaster position="top-right" richColors />
+      <Toaster
+        position="top-right"
+        richColors
+        toastOptions={{
+          style: {
+            borderRadius: '12px',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: '13px',
+          },
+        }}
+      />
     </QueryClientProvider>
   )
 }
